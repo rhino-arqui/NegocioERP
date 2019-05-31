@@ -1,7 +1,8 @@
 package listeners;
 
+import entities.Pro2;
 import entities.Property;
-import facades.FacadeERP;
+import facades.Pro2Facade;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.ActivationConfigProperty;
@@ -12,7 +13,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
-import javax.mail.MessagingException;
 
 @JMSDestinationDefinition(name = "java:app/jms/myTopic", interfaceName = "javax.jms.Topic", resourceAdapter = "jmsra", destinationName = "myTopic")
 
@@ -27,11 +27,13 @@ import javax.mail.MessagingException;
     ,
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic")
     ,
-        @ActivationConfigProperty(propertyName = "addressList", propertyValue = "10.192.12.42")
+        @ActivationConfigProperty(propertyName = "addressList", propertyValue = "192.168.0.13")
 })
 public class ListenerERP implements MessageListener {
+
     @EJB
-    private FacadeERP facadeERP;
+    private Pro2Facade pro2Facade;
+    
     
     public ListenerERP() {
     }
@@ -42,7 +44,15 @@ public class ListenerERP implements MessageListener {
         Property p = null;
         try {
             p = (Property) ((ObjectMessage)message).getObject();
-            facadeERP.guardarBD(p);
+            Pro2 p2 = new Pro2();
+            p2.setAdress(p.getAdress());
+            p2.setClientId(p.getClientId().getId());
+            p2.setId(p.getId());
+            p2.setIsAvailable(p.getIsAvailable());
+            p2.setIsDelete(p.getIsDelete());
+            p2.setNumberRooms(p.getNumberRooms());
+            p2.setRent(p.getRent());
+            pro2Facade.create(p2);
         } catch (JMSException ex) {
             Logger.getLogger(ListenerERP.class.getName()).log(Level.SEVERE, null, ex);
         }
